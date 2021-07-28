@@ -43,35 +43,35 @@ self.addEventListener("activate", function (event) {
 });
 
 // cache with network fallback strategy
-self.addEventListener("fetch", function (event) {
-  event.respondWith(
-    caches.match(event.request).then(function (response) {
-      // if response is null, that means there is no cached version for the request. So use default fetch func.
-      // cache mechanism => key-value pair. Key is always request object and value is always the response. That's why
-      // we are using caches.match(event.request) that, if there is a key value pair in caches.
-      if (response) {
-        return response;
-      } else {
-        return fetch(event.request)
-          .then(function (res) {
-            return caches.open(DYNAMIC_CACHE_VERSION).then(function (cache) {
-              // difference between add and put is that, put doesn't send any request, it just stores data we already have.
-              // here we have to use res.clone() because res object can only be consumed/used once. So if we want to use more
-              // than once, we have to use clone method of it. It doesn't matter which part we use clone. We may return res.clone()
-              // and use only res in put method also.
-              cache.put(event.request.url, res.clone());
-              return res;
-            });
-          })
-          .catch(function (err) {
-            return caches.open(STATIC_CACHE_VERSION).then(function (cache) {
-              return cache.match("/offline.html");
-            });
-          });
-      }
-    })
-  );
-});
+// self.addEventListener("fetch", function (event) {
+//   event.respondWith(
+//     caches.match(event.request).then(function (response) {
+//       // if response is null, that means there is no cached version for the request. So use default fetch func.
+//       // cache mechanism => key-value pair. Key is always request object and value is always the response. That's why
+//       // we are using caches.match(event.request) that, if there is a key value pair in caches.
+//       if (response) {
+//         return response;
+//       } else {
+//         return fetch(event.request)
+//           .then(function (res) {
+//             return caches.open(DYNAMIC_CACHE_VERSION).then(function (cache) {
+//               // difference between add and put is that, put doesn't send any request, it just stores data we already have.
+//               // here we have to use res.clone() because res object can only be consumed/used once. So if we want to use more
+//               // than once, we have to use clone method of it. It doesn't matter which part we use clone. We may return res.clone()
+//               // and use only res in put method also.
+//               cache.put(event.request.url, res.clone());
+//               return res;
+//             });
+//           })
+//           .catch(function (err) {
+//             return caches.open(STATIC_CACHE_VERSION).then(function (cache) {
+//               return cache.match("/offline.html");
+//             });
+//           });
+//       }
+//     })
+//   );
+// });
 
 // cache-only strategy
 // self.addEventListener("fetch", function (event) {
@@ -99,3 +99,17 @@ self.addEventListener("fetch", function (event) {
 //       })
 //   );
 // });
+
+// cache then network strategy
+// after fetch operation that we used feed.js, it goes here and it adds updated data that comes from network to the cache.
+// In other words, we are re-caching data -that has already cached- in every request.
+self.addEventListener("fetch", function (event) {
+  event.respondWith(
+    caches.open(DYNAMIC_CACHE_VERSION).then(function (cache) {
+      return fetch(event.request).then(function (res) {
+        cache.put(event.request, res.clone());
+        return res;
+      });
+    })
+  );
+});
