@@ -1,4 +1,4 @@
-const STATIC_CACHE_VERSION = "static-v4"; // if we change anything in our project, we just need to update its version from here to update caches.
+const STATIC_CACHE_VERSION = "static-v5"; // if we change anything in our project, we just need to update its version from here to update caches.
 const DYNAMIC_CACHE_VERSION = "dynamic-v3";
 
 self.addEventListener("install", function (event) {
@@ -9,6 +9,7 @@ self.addEventListener("install", function (event) {
       cache.addAll([
         "/", // => when the user visits domain.com/ it redirects to index.html but in offline case it won't be redirected. So we have to write / url also. Because it store urls as keys.
         "/index.html",
+        "/offline.html",
         "/src/js/app.js",
         "/src/js/feed.js",
         "/src/js/material.min.js",
@@ -61,7 +62,11 @@ self.addEventListener("fetch", function (event) {
               return res;
             });
           })
-          .catch(function (err) {});
+          .catch(function (err) {
+            return caches.open(STATIC_CACHE_VERSION).then(function (cache) {
+              return cache.match("/offline.html");
+            });
+          });
       }
     })
   );
