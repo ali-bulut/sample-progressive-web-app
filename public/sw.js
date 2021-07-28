@@ -1,5 +1,5 @@
-const STATIC_CACHE_VERSION = "static-v2"; // if we change anything in our project, we just need to update its version from here to update caches.
-const DYNAMIC_CACHE_VERSION = "dynamic-v1";
+const STATIC_CACHE_VERSION = "static-v4"; // if we change anything in our project, we just need to update its version from here to update caches.
+const DYNAMIC_CACHE_VERSION = "dynamic-v3";
 
 self.addEventListener("install", function (event) {
   console.log("[Service Worker] Installing Service Worker...", event);
