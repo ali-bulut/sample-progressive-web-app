@@ -34,7 +34,16 @@ self.addEventListener("fetch", function (event) {
       if (response) {
         return response;
       } else {
-        return fetch(event.request);
+        return fetch(event.request).then(function (res) {
+          return caches.open("dynamic").then(function (cache) {
+            // difference between add and put is that, put doesn't send any request, it just stores data we already have.
+            // here we have to use res.clone() because res object can only be consumed/used once. So if we want to use more
+            // than once, we have to use clone method of it. It doesn't matter which part we use clone. We may return res.clone()
+            // and use only res in put method also.
+            cache.put(event.request.url, res.clone());
+            return res;
+          });
+        });
       }
     })
   );
