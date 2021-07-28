@@ -100,16 +100,44 @@ self.addEventListener("activate", function (event) {
 //   );
 // });
 
-// cache then network strategy
+// cache then network strategy & cache with network fallback strategy
 // after fetch operation that we used feed.js, it goes here and it adds updated data that comes from network to the cache.
 // In other words, we are re-caching data -that has already cached- in every request.
 self.addEventListener("fetch", function (event) {
-  event.respondWith(
-    caches.open(DYNAMIC_CACHE_VERSION).then(function (cache) {
-      return fetch(event.request).then(function (res) {
-        cache.put(event.request, res.clone());
-        return res;
-      });
-    })
-  );
+  var url = "https://httpbin.org/get";
+
+  // by using that, we use cache then network strategy just for the request that has specified url. For other requests we use our old strategy that is cache with network fallback.
+  // we need to use that approach because if we don't use that, we won't be able to reach our some part of apps offline.
+  // Because in cache then network strategy we only get data via fetch(from network). We don't reach any data directly from the cache.
+  if (event.request.url.indexOf(url) > -1) {
+    event.respondWith(
+      caches.open(DYNAMIC_CACHE_VERSION).then(function (cache) {
+        return fetch(event.request).then(function (res) {
+          cache.put(event.request, res.clone());
+          return res;
+        });
+      })
+    );
+  } else {
+    event.respondWith(
+      caches.match(event.request).then(function (response) {
+        if (response) {
+          return response;
+        } else {
+          return fetch(event.request)
+            .then(function (res) {
+              return caches.open(DYNAMIC_CACHE_VERSION).then(function (cache) {
+                cache.put(event.request.url, res.clone());
+                return res;
+              });
+            })
+            .catch(function (err) {
+              return caches.open(STATIC_CACHE_VERSION).then(function (cache) {
+                return cache.match("/offline.html");
+              });
+            });
+        }
+      })
+    );
+  }
 });
