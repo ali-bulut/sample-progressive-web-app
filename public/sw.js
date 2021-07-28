@@ -133,7 +133,10 @@ self.addEventListener("fetch", function (event) {
             })
             .catch(function (err) {
               return caches.open(STATIC_CACHE_VERSION).then(function (cache) {
-                return cache.match("/offline.html");
+                // we just show offline.html if request url contains /help.
+                if (event.request.url.indexOf("/help")) {
+                  return cache.match("/offline.html");
+                }
               });
             });
         }
