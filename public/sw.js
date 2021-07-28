@@ -12,6 +12,7 @@ self.addEventListener("install", function (event) {
         "/src/css/app.css",
         "/src/css/feed.css",
         "/src/images/main-image.jpg",
+        "/favicon.ico",
         "https://fonts.googleapis.com/css?family=Roboto:400,700", // we can also cache files that loaded from other servers.
         "https://fonts.googleapis.com/icon?family=Material+Icons",
         "https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css",
@@ -34,16 +35,18 @@ self.addEventListener("fetch", function (event) {
       if (response) {
         return response;
       } else {
-        return fetch(event.request).then(function (res) {
-          return caches.open("dynamic").then(function (cache) {
-            // difference between add and put is that, put doesn't send any request, it just stores data we already have.
-            // here we have to use res.clone() because res object can only be consumed/used once. So if we want to use more
-            // than once, we have to use clone method of it. It doesn't matter which part we use clone. We may return res.clone()
-            // and use only res in put method also.
-            cache.put(event.request.url, res.clone());
-            return res;
-          });
-        });
+        return fetch(event.request)
+          .then(function (res) {
+            return caches.open("dynamic").then(function (cache) {
+              // difference between add and put is that, put doesn't send any request, it just stores data we already have.
+              // here we have to use res.clone() because res object can only be consumed/used once. So if we want to use more
+              // than once, we have to use clone method of it. It doesn't matter which part we use clone. We may return res.clone()
+              // and use only res in put method also.
+              cache.put(event.request.url, res.clone());
+              return res;
+            });
+          })
+          .catch(function (err) {});
       }
     })
   );
