@@ -7,7 +7,7 @@ self.addEventListener("install", function (event) {
     caches.open(STATIC_CACHE_VERSION).then(function (cache) {
       console.log("[Service Worker] Precaching App Shell");
       cache.addAll([
-        "/", // => when the user visits domain.com/ it redirects to index.html but in offline case it won't be redirected. So we have to write / url also.
+        "/", // => when the user visits domain.com/ it redirects to index.html but in offline case it won't be redirected. So we have to write / url also. Because it store urls as keys.
         "/index.html",
         "/src/js/app.js",
         "/src/js/feed.js",
