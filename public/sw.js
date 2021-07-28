@@ -42,6 +42,7 @@ self.addEventListener("activate", function (event) {
   return self.clients.claim();
 });
 
+// cache with network fallback strategy
 self.addEventListener("fetch", function (event) {
   event.respondWith(
     caches.match(event.request).then(function (response) {
@@ -71,3 +72,30 @@ self.addEventListener("fetch", function (event) {
     })
   );
 });
+
+// cache-only strategy
+// self.addEventListener("fetch", function (event) {
+//   event.respondWith(caches.match(event.request));
+// });
+
+// network-only strategy
+// self.addEventListener("fetch", function (event) {
+//   event.respondWith(fetch(event.request));
+// });
+
+// network with cache fallback strategy
+// self.addEventListener("fetch", function (event) {
+//   event.respondWith(
+//     fetch(event.request)
+//       // we can improve it by using dynamic caching
+//       //   .then(function (res) {
+//       //     return caches.open(DYNAMIC_CACHE_VERSION).then(function (cache) {
+//       //       cache.put(event.request.url, res.clone());
+//       //       return res;
+//       //     });
+//       //   })
+//       .catch(function (err) {
+//         return caches.match(event.request);
+//       })
+//   );
+// });
