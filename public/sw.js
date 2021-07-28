@@ -1,4 +1,4 @@
-const STATIC_CACHE_VERSION = "static-v5"; // if we change anything in our project, we just need to update its version from here to update caches.
+const STATIC_CACHE_VERSION = "static-v6"; // if we change anything in our project, we just need to update its version from here to update caches.
 const DYNAMIC_CACHE_VERSION = "dynamic-v3";
 
 self.addEventListener("install", function (event) {

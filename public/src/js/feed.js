@@ -43,6 +43,12 @@ closeCreatePostModalButton.addEventListener("click", closeCreatePostModal);
 //   }
 // }
 
+function clearCards() {
+  while (sharedMomentsArea.hasChildNodes()) {
+    sharedMomentsArea.removeChild(sharedMomentsArea.lastChild);
+  }
+}
+
 function createCard() {
   var cardWrapper = document.createElement("div");
   cardWrapper.className = "shared-moment-card mdl-card mdl-shadow--2dp";
@@ -69,10 +75,37 @@ function createCard() {
   sharedMomentsArea.appendChild(cardWrapper);
 }
 
-fetch("https://httpbin.org/get")
+// Cache Then Network Strategy
+// it will check both cache and network. If network is faster, it won't do anything with cache.
+// if cache is faster, it'll show cache data until network(server) data has received.
+
+var url = "https://httpbin.org/get";
+var networkDataReceived = false;
+
+fetch(url)
   .then(function (res) {
     return res.json();
   })
   .then(function (data) {
+    networkDataReceived = true;
+    console.log("From Web", data);
+    clearCards();
     createCard();
   });
+
+if ("caches" in window) {
+  caches
+    .match(url)
+    .then(function (response) {
+      if (response) {
+        return response.json();
+      }
+    })
+    .then(function (data) {
+      console.log("From Cache", data);
+      if (!networkDataReceived) {
+        clearCards();
+        createCard();
+      }
+    });
+}
