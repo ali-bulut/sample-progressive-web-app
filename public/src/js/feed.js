@@ -22,6 +22,15 @@ function openCreatePostModal() {
 
     deferredPrompt = null;
   }
+
+  // by using it we are able to remove all registered serviceWorker from our system.
+  // if ("serviceWorker" in navigator) {
+  //   navigator.serviceWorker.getRegistrations().then(function (registrations) {
+  //     for (let i = 0; i < registrations.length; i++) {
+  //       registrations[i].unregister();
+  //     }
+  //   });
+  // }
 }
 
 function closeCreatePostModal() {
