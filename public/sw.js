@@ -101,6 +101,15 @@ self.addEventListener("activate", function (event) {
 //   );
 // });
 
+function isInArray(string, array) {
+  for (let i = 0; i < array.length; i++) {
+    if (array[i] === string) {
+      return true;
+    }
+  }
+  return false;
+}
+
 self.addEventListener("fetch", function (event) {
   var url = "https://httpbin.org/get";
 
@@ -123,11 +132,7 @@ self.addEventListener("fetch", function (event) {
   }
   // cache-only strategy
   // we use it only for static files. We don't need to fetch these static files from network all the time.
-  else if (
-    new RegExp("\\b" + STATIC_FILES.join("\\b|\\b") + "\\b").test(
-      event.request.url
-    )
-  ) {
+  else if (isInArray(event.request.url, STATIC_FILES)) {
     self.addEventListener("fetch", function (event) {
       event.respondWith(caches.match(event.request));
     });
@@ -148,10 +153,14 @@ self.addEventListener("fetch", function (event) {
             })
             .catch(function (err) {
               return caches.open(STATIC_CACHE_VERSION).then(function (cache) {
-                // we just show offline.html if request url contains /help.
-                if (event.request.url.indexOf("/help")) {
+                // we just show offline.html if accept header is text/html.
+                // in other words if the request is fetching html file.
+                if (event.request.headers.get("accept").includes("text/html")) {
                   return cache.match("/offline.html");
                 }
+                // we can return anything we want here. For example instead of unloaded image,
+                // we can show default image. But for using it, we need to add this default image
+                // to STATIC_FILES like we did in offline.html file.
               });
             });
         }
