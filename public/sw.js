@@ -257,3 +257,8 @@ self.addEventListener("notificationclick", function (event) {
   }
   notification.close();
 });
+
+// works if user didn't interact with app's notification and just swiped(closed) it.
+self.addEventListener("notificationclose", function (event) {
+  console.log("Notification was closed.", event);
+});
