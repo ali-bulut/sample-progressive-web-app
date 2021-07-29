@@ -1,11 +1,15 @@
-const STATIC_CACHE_VERSION = "static-v6"; // if we change anything in our project, we just need to update its version from here to update caches.
-const DYNAMIC_CACHE_VERSION = "dynamic-v3";
+importScripts("/src/js/idb.js");
+importScripts("/src/js/utility.js");
+
+const STATIC_CACHE_VERSION = "static-v7"; // if we change anything in our project, we just need to update its version from here to update caches.
+const DYNAMIC_CACHE_VERSION = "dynamic-v4";
 const STATIC_FILES = [
   "/", // => when the user visits domain.com/ it redirects to index.html but in offline case it won't be redirected. So we have to write / url also. Because it store urls as keys.
   "/index.html",
   "/offline.html",
   "/src/js/app.js",
   "/src/js/feed.js",
+  "/src/js/idb.js",
   "/src/js/material.min.js",
   "/src/css/app.css",
   "/src/css/feed.css",
@@ -122,7 +126,7 @@ function isInArray(string, array) {
 }
 
 self.addEventListener("fetch", function (event) {
-  var url = "https://httpbin.org/get";
+  var url = "https://u-pwagram-default-rtdb.firebaseio.com/posts";
 
   // by using that, we use cache then network strategy just for the request that has specified url. For other requests we use our old strategy that is cache with network fallback.
   // we need to use that approach because if we don't use that, we won't be able to reach our some part of apps offline.
@@ -132,13 +136,30 @@ self.addEventListener("fetch", function (event) {
   // after fetch operation that we used feed.js, it goes here and it adds updated data that comes from network to the cache.
   // In other words, we are re-caching data -that has already cached- in every request.
   if (event.request.url.indexOf(url) > -1) {
+    // commented out after started to use IndexedDB.
+    // event.respondWith(
+    //   caches.open(DYNAMIC_CACHE_VERSION).then(function (cache) {
+    //     return fetch(event.request).then(function (res) {
+    //       //   trimCache(DYNAMIC_CACHE_VERSION, MAX_CACHE_ITEM_COUNT);
+    //       cache.put(event.request, res.clone());
+    //       return res;
+    //     });
+    //   })
+    // );
+
     event.respondWith(
-      caches.open(DYNAMIC_CACHE_VERSION).then(function (cache) {
-        return fetch(event.request).then(function (res) {
-          //   trimCache(DYNAMIC_CACHE_VERSION, MAX_CACHE_ITEM_COUNT);
-          cache.put(event.request, res.clone());
-          return res;
-        });
+      fetch(event.request).then(function (res) {
+        var clonedRes = res.clone();
+        clearAllData("posts")
+          .then(function () {
+            return clonedRes.json();
+          })
+          .then(function (data) {
+            for (var key in data) {
+              writeData("posts", data[key]);
+            }
+          });
+        return res;
       })
     );
   }
