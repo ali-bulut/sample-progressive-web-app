@@ -112,22 +112,32 @@ fetch(url)
     updateUI(dataArray);
   });
 
-if ("caches" in window) {
-  caches
-    .match(url)
-    .then(function (response) {
-      if (response) {
-        return response.json();
-      }
-    })
-    .then(function (data) {
+// commented out after started to use IndexedDB
+// if ("caches" in window) {
+//   caches
+//     .match(url)
+//     .then(function (response) {
+//       if (response) {
+//         return response.json();
+//       }
+//     })
+//     .then(function (data) {
+//       console.log("From Cache", data);
+//       if (!networkDataReceived) {
+//         var dataArray = [];
+//         for (var key in data) {
+//           dataArray.push(data[key]);
+//         }
+//         updateUI(dataArray);
+//       }
+//     });
+// }
+
+if ("indexedDB" in window) {
+  readAllData("posts").then(function (data) {
+    if (!networkDataReceived) {
       console.log("From Cache", data);
-      if (!networkDataReceived) {
-        var dataArray = [];
-        for (var key in data) {
-          dataArray.push(data[key]);
-        }
-        updateUI(dataArray);
-      }
-    });
+      updateUI(data);
+    }
+  });
 }
