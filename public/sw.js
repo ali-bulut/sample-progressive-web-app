@@ -1,11 +1,14 @@
-const STATIC_CACHE_VERSION = "static-v6"; // if we change anything in our project, we just need to update its version from here to update caches.
-const DYNAMIC_CACHE_VERSION = "dynamic-v3";
+importScripts("/src/js/idb.js");
+
+const STATIC_CACHE_VERSION = "static-v7"; // if we change anything in our project, we just need to update its version from here to update caches.
+const DYNAMIC_CACHE_VERSION = "dynamic-v4";
 const STATIC_FILES = [
   "/", // => when the user visits domain.com/ it redirects to index.html but in offline case it won't be redirected. So we have to write / url also. Because it store urls as keys.
   "/index.html",
   "/offline.html",
   "/src/js/app.js",
   "/src/js/feed.js",
+  "/src/js/idb.js",
   "/src/js/material.min.js",
   "/src/css/app.css",
   "/src/css/feed.css",
@@ -16,6 +19,12 @@ const STATIC_FILES = [
   "https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css",
 ];
 // const MAX_CACHE_ITEM_COUNT = 20;
+
+let dbPromise = idb.open("posts-store", 1, function (db) {
+  if (!db.objectStoreNames.contains("posts")) {
+    db.createObjectStore("posts", { keyPath: "id" });
+  }
+});
 
 // function trimCache(cacheName, maxItems) {
 //   caches.open(cacheName).then(function (cache) {
@@ -132,13 +141,31 @@ self.addEventListener("fetch", function (event) {
   // after fetch operation that we used feed.js, it goes here and it adds updated data that comes from network to the cache.
   // In other words, we are re-caching data -that has already cached- in every request.
   if (event.request.url.indexOf(url) > -1) {
+    // commented out after started to use IndexedDB.
+    // event.respondWith(
+    //   caches.open(DYNAMIC_CACHE_VERSION).then(function (cache) {
+    //     return fetch(event.request).then(function (res) {
+    //       //   trimCache(DYNAMIC_CACHE_VERSION, MAX_CACHE_ITEM_COUNT);
+    //       cache.put(event.request, res.clone());
+    //       return res;
+    //     });
+    //   })
+    // );
+
     event.respondWith(
-      caches.open(DYNAMIC_CACHE_VERSION).then(function (cache) {
-        return fetch(event.request).then(function (res) {
-          //   trimCache(DYNAMIC_CACHE_VERSION, MAX_CACHE_ITEM_COUNT);
-          cache.put(event.request, res.clone());
-          return res;
+      fetch(event.request).then(function (res) {
+        var clonedRes = res.clone();
+        clonedRes.json().then(function (data) {
+          for (var key in data) {
+            dbPromise.then(function (db) {
+              var tx = db.transaction("posts", "readwrite");
+              var store = tx.objectStore("posts");
+              store.put(data[key]);
+              return tx.complete;
+            });
+          }
         });
+        return res;
       })
     );
   }
