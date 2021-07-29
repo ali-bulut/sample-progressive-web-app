@@ -20,3 +20,13 @@ function readAllData(st) {
     return store.getAll();
   });
 }
+
+function clearAllData(st) {
+  return dbPromise.then(function (db) {
+    var tx = db.transaction(st, "readwrite");
+    var store = tx.objectStore(st);
+    store.clear();
+    // in every write operation we need to use tx.complete to say that transaction finished.
+    return tx.complete;
+  });
+}
