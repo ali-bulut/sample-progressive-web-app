@@ -122,7 +122,7 @@ function isInArray(string, array) {
 }
 
 self.addEventListener("fetch", function (event) {
-  var url = "https://httpbin.org/get";
+  var url = "https://u-pwagram-default-rtdb.firebaseio.com/posts";
 
   // by using that, we use cache then network strategy just for the request that has specified url. For other requests we use our old strategy that is cache with network fallback.
   // we need to use that approach because if we don't use that, we won't be able to reach our some part of apps offline.
