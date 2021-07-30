@@ -14,7 +14,26 @@ var imagePicker = document.querySelector("#image-picker");
 var imagePickerArea = document.querySelector("#pick-image");
 
 function initializeMedia() {
-  // initializing media operations
+  if (!("mediaDevices" in navigator)) {
+    navigator.mediaDevices = {};
+  }
+
+  // custom implementation for browsers that don't support getUserMedia/mediaDevices feature.
+  if (!("getUserMedia" in navigator.mediaDevices)) {
+    navigator.mediaDevices.getUserMedia = function (constraints) {
+      // safari || mozilla => their own implementation
+      var getUserMedia =
+        navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
+      if (!getUserMedia) {
+        return Promise.reject(new Error("getUserMedia is not implemented!"));
+      }
+
+      return new Promise(function (resolve, reject) {
+        getUserMedia.call(navigator, constraints, resolve, reject);
+      });
+    };
+  }
 }
 
 function openCreatePostModal() {
