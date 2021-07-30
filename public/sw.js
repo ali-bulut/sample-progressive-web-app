@@ -1,14 +1,15 @@
 importScripts("/src/js/idb.js");
 importScripts("/src/js/utility.js");
 
-const STATIC_CACHE_VERSION = "static-v7"; // if we change anything in our project, we just need to update its version from here to update caches.
-const DYNAMIC_CACHE_VERSION = "dynamic-v4";
+const STATIC_CACHE_VERSION = "static-v18"; // if we change anything in our project, we just need to update its version from here to update caches.
+const DYNAMIC_CACHE_VERSION = "dynamic-v6";
 const STATIC_FILES = [
   "/", // => when the user visits domain.com/ it redirects to index.html but in offline case it won't be redirected. So we have to write / url also. Because it store urls as keys.
   "/index.html",
   "/offline.html",
   "/src/js/app.js",
   "/src/js/feed.js",
+  "/src/js/utility.js",
   "/src/js/idb.js",
   "/src/js/material.min.js",
   "/src/css/app.css",
@@ -210,21 +211,19 @@ self.addEventListener("sync", function (event) {
     event.waitUntil(
       readAllData("sync-posts").then(function (data) {
         for (var dt of data) {
+          var postData = new FormData();
+          postData.append("id", dt.id);
+          postData.append("title", dt.title);
+          postData.append("location", dt.location);
+          postData.append("rawLocationLat", dt.rawLocation.lat);
+          postData.append("rawLocationLng", dt.rawLocation.lng);
+          postData.append("file", dt.picture, dt.id + ".png");
+
           fetch(
             "https://us-central1-u-pwagram.cloudfunctions.net/storePostData",
             {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              body: JSON.stringify({
-                id: dt.id,
-                title: dt.title,
-                location: dt.location,
-                image:
-                  "https://firebasestorage.googleapis.com/v0/b/u-pwagram.appspot.com/o/sf-boat.jpg?alt=media&token=a2d8343b-7bff-4bcf-ae9b-da2e000127c7",
-              }),
+              body: postData,
             }
           )
             .then(function (res) {
