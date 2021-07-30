@@ -52,18 +52,43 @@ function displayConfirmNotification() {
   // new Notification("Successfully Subscribed!", options);
 }
 
+function configurePushSub() {
+  if (!("serviceWorker" in navigator)) {
+    return;
+  }
+
+  var reg;
+  navigator.serviceWorker.ready
+    .then(function (swreg) {
+      reg = swreg;
+      return swreg.pushManager.getSubscription();
+    })
+    .then(function (sub) {
+      // sub will resolve any subscriptions we fetched. It'll be null if we don't have any subs.
+      if (sub === null) {
+        // create new sub
+        reg.pushManager.subscribe({
+          userVisibleOnly: true,
+        });
+      } else {
+        // we already have sub
+      }
+    });
+}
+
 function askForNotificationPermission() {
   Notification.requestPermission(function (result) {
     console.log("User Choice", result);
     if (result !== "granted") {
       console.log("No notification permission granted!");
     } else {
-      displayConfirmNotification();
+      // displayConfirmNotification();
+      configurePushSub();
     }
   });
 }
 
-if ("Notification" in window) {
+if ("Notification" in window && "serviceWorker" in navigator) {
   for (let i = 0; i < enableNotificationsButtons.length; i++) {
     enableNotificationsButtons[i].style.display = "inline-block";
     enableNotificationsButtons[i].addEventListener(
