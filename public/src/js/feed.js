@@ -15,12 +15,13 @@ var imagePickerArea = document.querySelector("#pick-image");
 var picture;
 var locationButton = document.querySelector("#location-btn");
 var locationLoader = document.querySelector("#location-loader");
-var fetchedLocation;
+var fetchedLocation = { lat: 0, lng: 0 };
 
 locationButton.addEventListener("click", function (event) {
   if (!("geolocation" in navigator)) {
     return;
   }
+  var sawAlert = false;
 
   locationButton.style.display = "none";
   locationLoader.style.display = "block";
@@ -42,10 +43,13 @@ locationButton.addEventListener("click", function (event) {
       console.log(err);
       locationButton.style.display = "inline";
       locationLoader.style.display = "none";
-      alert("Couldn't fetch location, please enter manually!");
+      if (!sawAlert) {
+        sawAlert = true;
+        alert("Couldn't fetch location, please enter manually!");
+      }
       fetchedLocation = {
-        lat: null,
-        lng: null,
+        lat: 0,
+        lng: 0,
       };
     },
     { timeout: 7000 }
@@ -151,6 +155,12 @@ function closeCreatePostModal() {
   canvasElement.style.display = "none";
   locationButton.style.display = "inline";
   locationLoader.style.display = "none";
+  captureButton.style.display = "inline";
+  if (videoPlayer.srcObject) {
+    videoPlayer.srcObject.getVideoTracks().forEach(function (track) {
+      track.stop();
+    });
+  }
 }
 
 shareImageButton.addEventListener("click", openCreatePostModal);
