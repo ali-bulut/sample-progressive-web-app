@@ -12,7 +12,7 @@ var serviceAccount = require("./pwagram-firebase-pk.json");
 
 var gcconfig = {
   projectId: "u-pwagram",
-  keyFilename: "pwagram-fb-key.json",
+  keyFilename: "pwagram-firebase-pk.json",
 };
 
 var gcs = require("@google-cloud/storage")(gcconfig);
