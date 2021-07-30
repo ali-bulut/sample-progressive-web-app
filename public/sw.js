@@ -1,8 +1,8 @@
 importScripts("/src/js/idb.js");
 importScripts("/src/js/utility.js");
 
-const STATIC_CACHE_VERSION = "static-v14"; // if we change anything in our project, we just need to update its version from here to update caches.
-const DYNAMIC_CACHE_VERSION = "dynamic-v5";
+const STATIC_CACHE_VERSION = "static-v16"; // if we change anything in our project, we just need to update its version from here to update caches.
+const DYNAMIC_CACHE_VERSION = "dynamic-v6";
 const STATIC_FILES = [
   "/", // => when the user visits domain.com/ it redirects to index.html but in offline case it won't be redirected. So we have to write / url also. Because it store urls as keys.
   "/index.html",
@@ -215,6 +215,8 @@ self.addEventListener("sync", function (event) {
           postData.append("id", dt.id);
           postData.append("title", dt.title);
           postData.append("location", dt.location);
+          postData.append("rawLocationLat", dt.rawLocation.lat);
+          postData.append("rawLocationLng", dt.rawLocation.lng);
           postData.append("file", dt.picture, dt.id + ".png");
 
           fetch(

@@ -13,6 +13,50 @@ var captureButton = document.querySelector("#capture-btn");
 var imagePicker = document.querySelector("#image-picker");
 var imagePickerArea = document.querySelector("#pick-image");
 var picture;
+var locationButton = document.querySelector("#location-btn");
+var locationLoader = document.querySelector("#location-loader");
+var fetchedLocation;
+
+locationButton.addEventListener("click", function (event) {
+  if (!("geolocation" in navigator)) {
+    return;
+  }
+
+  locationButton.style.display = "none";
+  locationLoader.style.display = "block";
+
+  navigator.geolocation.getCurrentPosition(
+    function (position) {
+      locationButton.style.display = "inline";
+      locationLoader.style.display = "none";
+      fetchedLocation = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      };
+      console.log(fetchedLocation);
+      // dummy, could be used Google Maps API to fetch location by the given coords.
+      locationInput.value = "In Istanbul";
+      document.querySelector("#manual-location").classList.add("is-focused");
+    },
+    function (err) {
+      console.log(err);
+      locationButton.style.display = "inline";
+      locationLoader.style.display = "none";
+      alert("Couldn't fetch location, please enter manually!");
+      fetchedLocation = {
+        lat: null,
+        lng: null,
+      };
+    },
+    { timeout: 7000 }
+  );
+});
+
+function initializeLocation() {
+  if (!("geolocation" in navigator)) {
+    locationButton.style.display = "none";
+  }
+}
 
 function initializeMedia() {
   if (!("mediaDevices" in navigator)) {
@@ -73,6 +117,7 @@ imagePicker.addEventListener("change", function (event) {
 function openCreatePostModal() {
   createPostArea.style.display = "block";
   initializeMedia();
+  initializeLocation();
   if (deferredPrompt) {
     deferredPrompt.prompt();
 
@@ -104,6 +149,8 @@ function closeCreatePostModal() {
   imagePickerArea.style.display = "none";
   videoPlayer.style.display = "none";
   canvasElement.style.display = "none";
+  locationButton.style.display = "inline";
+  locationLoader.style.display = "none";
 }
 
 shareImageButton.addEventListener("click", openCreatePostModal);
@@ -217,6 +264,8 @@ function sendData() {
   postData.append("id", id);
   postData.append("title", titleInput.value);
   postData.append("location", locationInput.value);
+  postData.append("rawLocationLat", fetchedLocation.lat);
+  postData.append("rawLocationLng", fetchedLocation.lng);
   postData.append("file", picture, id + ".png");
 
   fetch("https://us-central1-u-pwagram.cloudfunctions.net/storePostData", {
@@ -244,6 +293,7 @@ form.addEventListener("submit", function (event) {
         title: titleInput.value,
         location: locationInput.value,
         picture: picture,
+        rawLocation: fetchedLocation,
       };
       writeData("sync-posts", post)
         .then(function () {
