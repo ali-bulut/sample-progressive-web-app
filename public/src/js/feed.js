@@ -34,10 +34,22 @@ function initializeMedia() {
       });
     };
   }
+
+  // it will ask permission for camera feature automatically when this code executed.
+  navigator.mediaDevices
+    .getUserMedia({ video: true })
+    .then(function (stream) {
+      videoPlayer.srcObject = stream;
+      videoPlayer.style.display = "block";
+    })
+    .catch(function (err) {
+      imagePickerArea.style.display = "block";
+    });
 }
 
 function openCreatePostModal() {
   createPostArea.style.display = "block";
+  initializeMedia();
   if (deferredPrompt) {
     deferredPrompt.prompt();
 
@@ -66,6 +78,9 @@ function openCreatePostModal() {
 
 function closeCreatePostModal() {
   createPostArea.style.display = "none";
+  imagePickerArea.style.display = "none";
+  videoPlayer.style.display = "none";
+  canvasElement.style.display = "none";
 }
 
 shareImageButton.addEventListener("click", openCreatePostModal);

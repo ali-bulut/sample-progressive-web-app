@@ -1,7 +1,7 @@
 importScripts("/src/js/idb.js");
 importScripts("/src/js/utility.js");
 
-const STATIC_CACHE_VERSION = "static-v9"; // if we change anything in our project, we just need to update its version from here to update caches.
+const STATIC_CACHE_VERSION = "static-v10"; // if we change anything in our project, we just need to update its version from here to update caches.
 const DYNAMIC_CACHE_VERSION = "dynamic-v4";
 const STATIC_FILES = [
   "/", // => when the user visits domain.com/ it redirects to index.html but in offline case it won't be redirected. So we have to write / url also. Because it store urls as keys.
